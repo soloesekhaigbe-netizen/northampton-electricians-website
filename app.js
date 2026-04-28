@@ -34,6 +34,7 @@ const REVIEWS = [
 function renderServices() {
   const grid = document.getElementById("services-grid");
   if (!grid) return;
+
   grid.innerHTML = SERVICES.map(([icon, title, desc], i) => `
     <article data-reveal data-reveal-delay="${i * 60}" class="svc-card group h-full bg-white p-6 rounded-xl border border-border shadow-sm">
       <div class="flex items-start gap-4">
@@ -45,12 +46,14 @@ function renderServices() {
           <p class="mt-2 text-sm text-muted leading-relaxed">${desc}</p>
         </div>
       </div>
-    </article>`).join("");
+    </article>
+  `).join("");
 }
 
 function renderWhy() {
   const grid = document.getElementById("why-grid");
   if (!grid) return;
+
   grid.innerHTML = WHY.map(([icon, title, desc], i) => `
     <li data-reveal data-reveal-delay="${i * 60}">
       <div class="h-full bg-white rounded-xl border border-border p-5 flex items-start gap-4 hover:shadow-md hover:-translate-y-0.5 transition-all">
@@ -62,13 +65,16 @@ function renderWhy() {
           <p class="mt-1 text-sm text-muted leading-relaxed">${desc}</p>
         </div>
       </div>
-    </li>`).join("");
+    </li>
+  `).join("");
 }
 
 function renderReviews() {
   const grid = document.getElementById("reviews-grid");
   if (!grid) return;
+
   const stars = `<span class="flex items-center gap-0.5 text-amber-400">${'<i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>'.repeat(5)}</span>`;
+
   grid.innerHTML = REVIEWS.map(([quote, name, role], i) => `
     <figure data-reveal data-reveal-delay="${i * 100}" class="relative h-full bg-surface rounded-xl border border-border p-7 hover:shadow-md transition-shadow">
       <i data-lucide="quote" class="absolute top-5 right-5 w-7 h-7 text-electric/20"></i>
@@ -81,14 +87,18 @@ function renderReviews() {
           <p class="text-xs text-muted">${role}</p>
         </div>
       </figcaption>
-    </figure>`).join("");
+    </figure>
+  `).join("");
 }
 
 // ---------- INTERACTIONS ----------
 function setupHeader() {
   const header = document.getElementById("site-header");
+  if (!header) return;
+
   const onScroll = () => header.classList.toggle("is-scrolled", window.scrollY > 8);
   onScroll();
+
   window.addEventListener("scroll", onScroll, { passive: true });
 }
 
@@ -96,16 +106,21 @@ function setupMobileMenu() {
   const btn = document.getElementById("menu-toggle");
   const menu = document.getElementById("mobile-menu");
   const icon = document.getElementById("menu-icon");
-  if (!btn || !menu) return;
+
+  if (!btn || !menu || !icon) return;
+
   btn.addEventListener("click", () => {
     const open = menu.classList.toggle("hidden") === false;
     icon.setAttribute("data-lucide", open ? "x" : "menu");
+
     if (window.lucide) window.lucide.createIcons();
   });
+
   document.querySelectorAll(".mobile-link").forEach((a) =>
     a.addEventListener("click", () => {
       menu.classList.add("hidden");
       icon.setAttribute("data-lucide", "menu");
+
       if (window.lucide) window.lucide.createIcons();
     })
   );
@@ -117,79 +132,91 @@ function setupReveal() {
       entries.forEach((e) => {
         if (e.isIntersecting) {
           const delay = parseInt(e.target.dataset.revealDelay || "0", 10);
-          setTimeout(() => e.target.classList.add("is-visible"), delay);
+
+          setTimeout(() => {
+            e.target.classList.add("is-visible");
+          }, delay);
+
           obs.unobserve(e.target);
         }
       });
     },
     { threshold: 0.12 }
   );
+
   document.querySelectorAll("[data-reveal]").forEach((el) => obs.observe(el));
 }
 
 // ---------- TOAST ----------
 function toast(msg, type = "success") {
   let el = document.getElementById("toast");
+
   if (!el) {
     el = document.createElement("div");
     el.id = "toast";
     document.body.appendChild(el);
   }
+
   el.textContent = msg;
   el.className = "show " + type;
+
   clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove("show"), 3800);
+
+  el._t = setTimeout(() => {
+    el.classList.remove("show");
+  }, 3800);
 }
 
 // ---------- QUOTE FORM ----------
-//
-// Default behaviour: opens the user's email client with a pre-filled quote.
-// To use a real form backend (Formspree, Web3Forms, Cloudflare Workers, etc.),
-// replace the `submitQuote` function with a fetch() to your endpoint.
-//
+// This sends quote requests to Web3Forms.
+// Go to Web3Forms, copy your Access Key, then paste it below.
 async function submitQuote(data) {
-  // === DEFAULT: mailto fallback (works without any backend) ===
-  const subject = encodeURIComponent(`Quote request — ${data.job_type || "Electrical work"}`);
-  const body = encodeURIComponent(
-    `Name: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nJob type: ${data.job_type}\n\nMessage:\n${data.message || "(none)"}`
-  );
-  window.location.href = `mailto:info@northamptonelectricians.example?subject=${subject}&body=${body}`;
-  return { ok: true };
+  const res = await fetch("https://api.web3forms.com/submit", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    },
+    body: JSON.stringify({
+      access_key: "PASTE_YOUR_WEB3FORMS_ACCESS_KEY_HERE",
+      subject: `New quote request — ${data.job_type || "Electrical work"}`,
+      from_name: "Northampton Electricians Website",
+      name: data.name,
+      phone: data.phone,
+      email: data.email,
+      job_type: data.job_type,
+      message: data.message || "No message provided"
+    })
+  });
 
-  // === OPTIONAL: Formspree ===
-  // const res = await fetch("https://formspree.io/f/YOUR_FORM_ID", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json", Accept: "application/json" },
-  //   body: JSON.stringify(data),
-  // });
-  // return { ok: res.ok };
-
-  // === OPTIONAL: Web3Forms (free, no signup beyond access key) ===
-  // const res = await fetch("https://api.web3forms.com/submit", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json", Accept: "application/json" },
-  //   body: JSON.stringify({ access_key: "YOUR_WEB3FORMS_KEY", ...data }),
-  // });
-  // return { ok: res.ok };
+  const result = await res.json();
+  return { ok: result.success };
 }
 
 function setupForm() {
   const form = document.getElementById("quote-form");
   if (!form) return;
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     const fd = new FormData(form);
     const data = Object.fromEntries(fd.entries());
+
     if (!data.name || !data.phone || !data.email || !data.job_type) {
       toast("Please fill in your name, phone, email and job type.", "error");
       return;
     }
+
     const btn = form.querySelector('button[type="submit"]');
     const original = btn.innerHTML;
+
     btn.disabled = true;
     btn.innerHTML = "Sending…";
+
     try {
       const res = await submitQuote(data);
+
       if (res.ok) {
         toast("Quote request sent! We'll be in touch shortly.", "success");
         form.reset();
@@ -201,6 +228,7 @@ function setupForm() {
     } finally {
       btn.disabled = false;
       btn.innerHTML = original;
+
       if (window.lucide) window.lucide.createIcons();
     }
   });
@@ -208,11 +236,15 @@ function setupForm() {
 
 // ---------- INIT ----------
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("year").textContent = new Date().getFullYear();
+  const year = document.getElementById("year");
+  if (year) year.textContent = new Date().getFullYear();
+
   renderServices();
   renderWhy();
   renderReviews();
+
   if (window.lucide) window.lucide.createIcons();
+
   setupHeader();
   setupMobileMenu();
   setupReveal();
