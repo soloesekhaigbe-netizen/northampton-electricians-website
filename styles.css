@@ -1,0 +1,78 @@
+/* Custom CSS variables, animations, and styles that complement Tailwind CDN */
+
+:root {
+  --ne-navy: #0A192F;
+  --ne-blue: #0052CC;
+  --ne-border: #E2E8F0;
+}
+
+html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+/* Subtle moving grid for hero / quote backgrounds */
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  background-position: -1px -1px;
+  -webkit-mask-image: radial-gradient(ellipse at 30% 40%, rgba(0,0,0,0.85), transparent 70%);
+          mask-image: radial-gradient(ellipse at 30% 40%, rgba(0,0,0,0.85), transparent 70%);
+}
+
+/* Reveal-on-scroll animation */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1), transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
+}
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Ambient bolt glow */
+@keyframes bolt-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.04); }
+}
+.animate-bolt-pulse { animation: bolt-pulse 3.4s ease-in-out infinite; }
+
+/* Service / why card hover lift */
+.svc-card { transition: transform 300ms ease, box-shadow 300ms ease, border-color 300ms ease; }
+.svc-card:hover { transform: translateY(-4px); box-shadow: 0 18px 40px -22px rgba(10,25,47,0.35); border-color: var(--ne-navy); }
+.svc-card:hover .svc-icon { background-color: var(--ne-navy); color: #fff; }
+
+/* Sticky header scrolled state (toggled in app.js) */
+#site-header.is-scrolled {
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom-color: var(--ne-border);
+  box-shadow: 0 4px 20px -12px rgba(10, 25, 47, 0.25);
+}
+
+/* Toast (used by app.js) */
+#toast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  z-index: 100;
+  min-width: 280px;
+  max-width: calc(100vw - 32px);
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #0A192F;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 12px 40px -12px rgba(10,25,47,0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 250ms ease, transform 250ms ease;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#toast.success { background: #0F3D2E; border: 1px solid #10b981; }
+#toast.error   { background: #3D0F18; border: 1px solid #ef4444; }
