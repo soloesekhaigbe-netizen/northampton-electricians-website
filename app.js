@@ -178,7 +178,7 @@ async function submitQuote(data) {
       Accept: "application/json"
     },
     body: JSON.stringify({
-      access_key: 85a4ed7f-82eb-4064-80ae-af9f0d6f3dbe,
+      access_key: "85a4ed7f-82eb-4064-80ae-af9f0d6f3dbe",
       subject: `New quote request — ${data.job_type || "Electrical work"}`,
       from_name: "Northampton Electricians Website",
       name: data.name,
